@@ -1,0 +1,11 @@
+{
+  "name": "big-spy-collector",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "4.92.0"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "big-spy-collector",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-10-08",
+  "browser": {
+    "binding": "BROWSER"
+  },
+  "keep_vars": true
+}
