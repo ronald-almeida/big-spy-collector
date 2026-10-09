@@ -26,7 +26,9 @@ export async function collectPages(page,{limit,start='',end='',excludeIds=[],dea
    if(scrolls===0)firstBatch=seen.size;
    if(eligible().length>=limit){reason='target';break;}
    if(!seen.size&&/nenhum resultado|nenhum anúncio|\b0 resultados|no results|no ads found|\b0 results/i.test(text)){reason='empty';break;}
-   stagnant=seen.size===before?stagnant+1:0;
+   const previous=scrollPositions.at(-1);
+   const atEnd=!previous||previous.after+previous.height>=previous.total-5;
+   stagnant=seen.size===before&&atEnd?stagnant+1:0;
    if(stagnant>=3){reason=seen.size?'stalled':'unrecognized';break;}
    if(scrolls>=maxScrolls){reason='scroll_limit';break;}
    if(deadline-clock()<4000)break;
@@ -34,11 +36,11 @@ export async function collectPages(page,{limit,start='',end='',excludeIds=[],dea
     const candidates=[document.scrollingElement,...document.querySelectorAll('div')].filter(e=>e&&e.clientHeight>200&&e.clientWidth>300&&e.scrollHeight>e.clientHeight+100&&(/auto|scroll/.test(getComputedStyle(e).overflowY)||e===document.scrollingElement));
     candidates.sort((a,b)=>(b.clientWidth*b.clientHeight)-(a.clientWidth*a.clientHeight));
     const e=candidates[0]||document.scrollingElement||document.documentElement;const before=e.scrollTop;
-    e.scrollTo({top:e.scrollHeight,behavior:'instant'});
+    e.scrollTo({top:Math.min(e.scrollHeight,e.scrollTop+Math.max(500,e.clientHeight*.8)),behavior:'instant'});
     return {tag:e.tagName,height:e.clientHeight,total:e.scrollHeight,before,after:e.scrollTop,containers:candidates.length};
    }));
    scrolls++;
-   await page.evaluate(()=>new Promise(resolve=>setTimeout(resolve,2500)));
+   await page.evaluate(()=>new Promise(resolve=>setTimeout(resolve,1200)));
   }
  }catch(e){reason='interrupted';error='O carregamento foi interrompido; os anúncios já encontrados foram preservados.';}
  const ads=eligible().slice(0,limit);
