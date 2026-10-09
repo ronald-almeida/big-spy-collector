@@ -5,5 +5,8 @@
   "browser": {
     "binding": "BROWSER"
   },
-  "keep_vars": true
+  "keep_vars": true,
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
 }
