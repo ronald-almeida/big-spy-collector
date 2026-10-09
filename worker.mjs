@@ -40,7 +40,7 @@ function parseAds(markdown) {
 export default {
   async fetch(request, env) {
     if (request.method === "GET") {
-      return json({ service: "BIG Spy", configured: !!env.BROWSER && !!env.COLLECTOR_TOKEN });
+      return json({ service: "BIG Spy", version: "github-diagnostics-2", configured: !!env.BROWSER && !!env.COLLECTOR_TOKEN });
     }
     if (request.method !== "POST") return json({ error: "Use POST." }, 405);
     if (!env.COLLECTOR_TOKEN || request.headers.get("Authorization") !== `Bearer ${env.COLLECTOR_TOKEN}`) {
@@ -69,7 +69,10 @@ export default {
         url: url.href, gotoOptions: { waitUntil: "networkidle2", timeout: 25000 }
       });
       const data = await response.json();
-      if (!response.ok || data.success === false) return json({ error: "Falha no navegador. Confira a franquia e o vínculo BROWSER." }, 502);
+      if (!response.ok || data.success === false) {
+        console.error("Browser Run falhou:", JSON.stringify({status: response.status, errors: data.errors || []}));
+        return json({ error: "Falha no navegador. Confira a franquia e o vínculo BROWSER." }, 502);
+      }
       const text = typeof data.result === "string" ? data.result : "";
       console.log("Página recebida do Facebook:", text.slice(0, 3000));
       if (/verify you are human|unusual traffic|temporarily blocked|temporariamente bloqueado|access denied/i.test(text)) {
@@ -83,7 +86,8 @@ export default {
         (!end || (a.started && a.started <= end))).slice(0, p.limit);
       return json({ ads, analyzed: all.length, partial: true,
         message: "Teste do primeiro lote carregado, sem rolagem automática." });
-    } catch {
+    } catch (error) {
+      console.error("Falha do coletor:", error instanceof Error ? error.message : "Erro desconhecido");
       return json({ error: "A coleta não foi concluída. Confira a configuração e tente novamente." }, 502);
     }
   }
