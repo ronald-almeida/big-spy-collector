@@ -40,7 +40,7 @@ function parseAds(markdown) {
 export default {
   async fetch(request, env) {
     if (request.method === "GET") {
-      return json({ service: "BIG Spy", version: "github-diagnostics-2", configured: !!env.BROWSER && !!env.COLLECTOR_TOKEN });
+      return json({ service: "BIG Spy", version: "github-diagnostics-3", configured: !!env.BROWSER && !!env.COLLECTOR_TOKEN });
     }
     if (request.method !== "POST") return json({ error: "Use POST." }, 405);
     if (!env.COLLECTOR_TOKEN || request.headers.get("Authorization") !== `Bearer ${env.COLLECTOR_TOKEN}`) {
@@ -78,6 +78,7 @@ export default {
       if (/verify you are human|unusual traffic|temporarily blocked|temporariamente bloqueado|access denied/i.test(text)) {
         return json({ error: "A Meta bloqueou este navegador. A coleta foi interrompida." }, 502);
       }
+      if (p.debug === true) return json({diagnostic: {length: text.length, excerpt: text.slice(0, 18000)}});
       const all = parseAds(text);
       if (!all.length && !/nenhum resultado|nenhum anúncio|\b0 resultados/i.test(text)) {
         return json({ error: "Não foi possível reconhecer os anúncios. Pode haver login, bloqueio ou carregamento incompleto." }, 502);
