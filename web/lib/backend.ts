@@ -1,5 +1,5 @@
 import {auth} from './auth';
-export async function proxy(request:Request,path:'data'|'search'|'feedback'){
+export async function proxy(request:Request,path:'data'|'search'|'feedback'|'discover'){
   const session=await auth();
   if(!session?.user)return Response.json({error:'Entre na sua conta para continuar.'},{status:401});
   if(request.method!=='GET'){
