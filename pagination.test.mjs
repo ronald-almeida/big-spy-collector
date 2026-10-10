@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {collectPages} from './pagination.mjs';
-const ad=(id,date='Oct 8, 2026')=>`Library ID: ${id}\nStarted running on ${date}\n[Example](https://www.facebook.com/example)\nSponsored\nOferta curso especial\n![Creative](https://example.com/image.jpg)\n[Saiba mais](https://example.com/course)`;
+const ad=(id,date='Oct 8, 2026')=>`Library ID: ${id}\nStarted running on ${date}\n[Example](https://www.facebook.com/example)\nSponsored\nVocê pode aprender com nossas aulas. Inscrições abertas para seu curso.\n![Creative](https://example.com/image.jpg)\n[Saiba mais](https://example.com/course)`;
 function fake(batches){let index=0;return {async evaluate(fn){if(fn.name==='snapshot')return batches[Math.min(index,batches.length-1)];if(fn.toString().includes('scrollTo'))index++;}};}
 test('loads second batch, deduplicates, excludes saved ads and honors dates',async()=>{
  const r=await collectPages(fake([ad('1')+'\n'+ad('9','Jan 1, 2025'),ad('1')+'\n'+ad('2')+'\n'+ad('3')]),{limit:2,start:'2026-10-01',excludeIds:['1']});

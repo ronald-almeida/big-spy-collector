@@ -1,3 +1,4 @@
+import {isBrazilOffer} from './brazil.mjs';
 import {parseAds} from './parser.mjs';
 // Runs in the page. Preserve text, links and creatives in DOM order.
 export function snapshot(){
@@ -16,7 +17,7 @@ export function snapshot(){
 }
 export async function collectPages(page,{limit,start='',end='',excludeIds=[],deadline=Date.now()+48000,maxScrolls=12},clock=Date.now){
  const known=new Set(excludeIds),seen=new Map(),scrollPositions=[];let scrolls=0,stagnant=0,reason='time_limit',error='',firstBatch=0;
- const eligible=()=>[...seen.values()].filter(a=>!known.has(a.id)&&(!start||(a.started&&a.started>=start))&&(!end||(a.started&&a.started<=end)));
+ const eligible=()=>[...seen.values()].filter(a=>isBrazilOffer(a)&&!known.has(a.id)&&(!start||(a.started&&a.started>=start))&&(!end||(a.started&&a.started<=end)));
  try{
   while(clock()<deadline){
    const text=await page.evaluate(snapshot);

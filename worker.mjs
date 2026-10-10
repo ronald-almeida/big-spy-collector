@@ -2,7 +2,7 @@ import puppeteer from '@cloudflare/puppeteer';
 import {collectPages} from './pagination.mjs';
 const json=(data,status=200)=>Response.json(data,{status});
 export default {async fetch(request,env){
- if(request.method==='GET')return json({service:'BIG Spy',version:'collector-scroll-1',configured:!!env.BROWSER&&!!env.COLLECTOR_TOKEN});
+ if(request.method==='GET')return json({service:'BIG Spy',version:'collector-br-2',configured:!!env.BROWSER&&!!env.COLLECTOR_TOKEN});
  if(request.method!=='POST')return json({error:'Use POST.'},405);
  if(!env.COLLECTOR_TOKEN||request.headers.get('Authorization')!==`Bearer ${env.COLLECTOR_TOKEN}`)return json({error:'Acesso não autorizado.'},401);
  if(!env.BROWSER)return json({error:'Vínculo BROWSER não configurado.'},503);
