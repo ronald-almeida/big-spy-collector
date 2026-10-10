@@ -1,14 +1,20 @@
 import puppeteer from '@cloudflare/puppeteer';
 import {collectPages} from './pagination.mjs';
+import {inspectPage,publicUrl} from './inspection.mjs';
 const json=(data,status=200)=>Response.json(data,{status});
 export default {async fetch(request,env){
- if(request.method==='GET')return json({service:'BIG Spy',version:'collector-br-2',configured:!!env.BROWSER&&!!env.COLLECTOR_TOKEN});
+ if(request.method==='GET')return json({service:'BIG Spy',version:'collector-inspect-1',configured:!!env.BROWSER&&!!env.COLLECTOR_TOKEN});
  if(request.method!=='POST')return json({error:'Use POST.'},405);
  if(!env.COLLECTOR_TOKEN||request.headers.get('Authorization')!==`Bearer ${env.COLLECTOR_TOKEN}`)return json({error:'Acesso não autorizado.'},401);
  if(!env.BROWSER)return json({error:'Vínculo BROWSER não configurado.'},503);
  let browser,timer;const begun=Date.now();
  try{
   const p=await request.json();
+  if(p?.type==='inspect'){
+   if(!publicUrl(p.url))return json({error:'Endereço de destino inválido.'},400);
+   browser=await puppeteer.launch(env.BROWSER);timer=setTimeout(()=>{void browser.close().catch(()=>{});},45000);
+   return json(await inspectPage(browser,p.url));
+  }
   if(!p||typeof p.word!=='string'||!p.word.trim()||p.word.length>120||!Number.isInteger(p.limit)||p.limit<1||p.limit>100)return json({error:'Informe word e limit entre 1 e 100.'},400);
   const start=p.start||'',end=p.end||'',today=new Date().toISOString().slice(0,10);
   if(typeof start!=='string'||typeof end!=='string'||[start,end].some(v=>v&&(!/^\d{4}-\d{2}-\d{2}$/.test(v)||v>today))||(start&&end&&start>end))return json({error:'Período inválido.'},400);

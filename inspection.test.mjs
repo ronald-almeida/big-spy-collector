@@ -1,0 +1,6 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {analyzeSnapshot,publicUrl} from './inspection.mjs';
+test('detects requested VIP invitation and lead fields',()=>{const r=analyzeSnapshot({text:'Clique no botão abaixo para entrar no grupo vip e garantir a sua vaga antes que esgote as vagas gratuitas.',forms:[{fields:[{type:'email',label:'E-mail'}]}],links:[{href:'https://chat.whatsapp.com/abc',text:'Entrar'}]});assert.equal(r.hasForm,true);assert.equal(r.hasGroupCall,true);assert.equal(r.hasGroupLink,true);assert.equal(r.evidence.length,1)});
+test('contact and search are not group invite or lead form',()=>{const r=analyzeSnapshot({text:'Entre em contato com o atendimento',forms:[{fields:[{type:'text',label:'Pesquisar'}]}],links:[{href:'https://wa.me/5511999999999'}]});assert.equal(r.hasForm,false);assert.equal(r.hasGroupCall,false);assert.equal(r.hasGroupLink,false)});
+test('rejects private literal addresses and unsafe schemes',()=>{for(const u of ['http://127.0.0.1','http://10.0.0.1','http://[::1]','http://localhost','file:///etc/passwd','http://service.internal','http://2130706433','https://user:pass@example.com'])assert.equal(publicUrl(u),false);assert.ok(publicUrl('https://www.facebook.com/'))});
