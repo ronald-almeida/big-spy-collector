@@ -1,0 +1,35 @@
+name: BIG Spy engine
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+permissions:
+  id-token: write
+  contents: read
+concurrency:
+  group: big-spy-engine
+  cancel-in-progress: false
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Process saved offers on the application server
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os, json, urllib.request, urllib.error
+          audience='https%3A%2F%2Fbig-spy.vercel.app%2Fapi%2Fcron'
+          request=urllib.request.Request(os.environ['ACTIONS_ID_TOKEN_REQUEST_URL']+'&audience='+audience,headers={'Authorization':'Bearer '+os.environ['ACTIONS_ID_TOKEN_REQUEST_TOKEN']})
+          with urllib.request.urlopen(request,timeout=30) as response:
+            token=json.load(response)['value']
+          print('::add-mask::'+token)
+          request=urllib.request.Request('https://big-spy.vercel.app/api/cron',headers={'Authorization':'Bearer '+token})
+          try:
+            with urllib.request.urlopen(request,timeout=290) as response:
+              result=json.load(response)
+            print('Engine round finished. Details are saved in the BIG Spy dashboard.')
+          except urllib.error.HTTPError as error:
+            print('Engine request returned HTTP',error.code,'No automatic retry in this run.')
+            raise SystemExit(1)
+          PY
